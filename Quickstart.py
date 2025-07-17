@@ -73,7 +73,7 @@ def train(dataloader, model, loss_fn, optimizer):
         optimizer:梯度下降优化器
     """
     size = len(dataloader.dataset)
-    # 标记开始训练
+    # 标记为训练模式
     model.train()
     for i, (X, y) in enumerate(dataloader):
         # 将数据放入设备（cpu或gpu(cuda)）
@@ -93,12 +93,70 @@ def train(dataloader, model, loss_fn, optimizer):
             loss, current = loss.item(), (i + 1) * len(X)
             print(f"loss:{loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-train(dataloader=train_dataloader, model=model, loss_fn=loss_fn, optimizer=optimizer)
+def test(dataloader, model, loss_fn):
+    """
+    测试模型
+        dataloader:数据加载器，加载测试数据
+        model:模型
+        loss_fn:损失函数
+    """
+    size = len(dataloader.dataset)
+    num_batches = len(dataloader)
+    # 标记为评估模式
+    model.eval()
+    # 初始化损失和正确率
+    test_loss, correct = 0, 0
+    # 禁用梯度计算，提高性能
+    with torch.no_grad():
+        for X, y in dataloader:
+            # 把数据移动到设备上(可能是cup或gpu(cuda))
+            X, y = X.to(device), y.to(device)
+            # 运行模型进行预测
+            pred = model(X)
+            # .item() 取值具体的数值, loss_fn(pred, y)返回的是一个Tensor对象
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+    test_loss /= num_batches
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
+def main(eval=False):
+    if (eval):
+        # 加载模型
+        model_eval = NeuralNetwork().to(device)
+        model_eval.load_state_dict(torch.load("model.pth", weights_only=True))
+        classes = [
+            "T-shirt/top",
+            "Trouser",
+            "Pullover",
+            "Dress",
+            "Coat",
+            "Sandal",
+            "Shirt",
+            "Sneaker",
+            "Bag",
+            "Ankle boot",
+        ]
+        model_eval.eval()
+        with torch.no_grad():
+            for i in range(len(test_data)):
+                x, y = test_data[i][0], test_data[i][1]
+                x = x.to(device)
+                pred = model_eval(x)
+                predicted, actual = classes[pred[0].argmax(0)], classes[y]
+                print(f'Predicted: "{predicted}", Actual: "{actual}"')
+    else:
+        epochs = 2
+        for t in range(epochs):
+            print(f"Epoch {t + 1}\n-------------------------------")
+            train(train_dataloader, model, loss_fn, optimizer)
+            test(test_dataloader, model, loss_fn)
+        print("Done!")
+        torch.save(model.state_dict(), "model.pth")
+        print("Save model successfully!")
 
-
-
-
+if __name__ == '__main__':
+    main(True)
 
 
 
