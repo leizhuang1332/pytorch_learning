@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑客帝国数字雨</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        canvas {
+            display: block;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            color: #0F0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label for="speedSlider">速度: <span id="speedValue">10</span></label>
+            <input type="range" id="speedSlider" min="1" max="20" value="10">
+        </div>
+        <div class="control-group">
+            <label for="densitySlider">密度: <span id="densityValue">20</span></label>
+            <input type="range" id="densitySlider" min="5" max="40" value="20">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置画布为全屏
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            // 参数配置
+            let speed = 10;  // 基础速度
+            let density = 20; // 列间距（像素）
+            const characters = '0123456789'; // 字符集：仅使用数字
+            const fontSize = 16;
+            
+            // 获取滑块元素
+            const speedSlider = document.getElementById('speedSlider');
+            const densitySlider = document.getElementById('densitySlider');
+            const speedValue = document.getElementById('speedValue');
+            const densityValue = document.getElementById('densityValue');
+            
+            // 更新滑块值显示
+            speedValue.textContent = speed;
+            densityValue.textContent = density;
+            
+            // 速度滑块事件
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedValue.textContent = speed;
+            });
+            
+            // 密度滑块事件
+            densitySlider.addEventListener('input', function() {
+                density = parseInt(this.value);
+                densityValue.textContent = density;
+                initDrops(); // 密度改变时重新初始化
+            });
+            
+            // 初始化下落点位置
+            let columns;
+            let drops = [];
+            
+            function initDrops() {
+                columns = Math.floor(canvas.width / density);
+                drops = [];
+                for (let i = 0; i < columns; i++) {
+                    drops[i] = Math.random() * -canvas.height;
+                }
+            }
+            
+            // 初始初始化
+            initDrops();
+            
+            // 绘制函数
+            function draw() {
+                // 半透明黑色覆盖层（创建拖尾效果）
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 设置文字样式
+                ctx.fillStyle = '#0F0'; // 绿色
+                ctx.font = `${fontSize}px monospace`;
+                
+                // 绘制每列字符
+                for (let i = 0; i < drops.length; i++) {
+                    const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                    const x = i * density; // 使用密度控制列间距
+                    const y = drops[i];
+                    
+                    ctx.fillText(text, x, y);
+                    
+                    // 重置超出屏幕的字符
+                    if (y > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    
+                    // 使用滑块控制速度
+                    drops[i] += speed / 2 + Math.random() * speed;
+                }
+                
+                requestAnimationFrame(draw);
+            }
+            
+            draw(); // 启动动画
+        });
+    </script>
+</body>
+</html>
