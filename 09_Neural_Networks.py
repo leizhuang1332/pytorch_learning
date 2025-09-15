@@ -3,14 +3,16 @@ from PIL import Image
 import torch
 
 # 图片路径
-image_path = 'img/image.png'
+image_path = "src/img/image.png"
 
 # 定义转换操作，将图片转换为Tensor并标准化（可选）
-transform = transforms.Compose([
-    transforms.Resize((28, 28)),  # 将图片大小调整为224x224
-    transforms.Grayscale(num_output_channels=1),  # 新增的灰度转换
-    transforms.ToTensor()  # 将图片转换为Tensor，默认范围是[0, 1]
-])
+transform = transforms.Compose(
+    [
+        transforms.Resize((28, 28)),  # 将图片大小调整为224x224
+        transforms.Grayscale(num_output_channels=1),  # 新增的灰度转换
+        transforms.ToTensor(),  # 将图片转换为Tensor，默认范围是[0, 1]
+    ]
+)
 
 # 加载图片并应用转换
 image = Image.open(image_path)

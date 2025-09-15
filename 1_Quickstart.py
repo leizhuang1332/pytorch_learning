@@ -6,9 +6,13 @@ from torchvision.transforms import ToTensor
 from torchvision.transforms import ToPILImage
 
 # 下载训练数据集
-training_data = datasets.FashionMNIST(root="data",train=True,transform=ToTensor(),download=True)
+training_data = datasets.FashionMNIST(
+    root="data", train=True, transform=ToTensor(), download=True
+)
 # 下载测试数据集
-test_data = datasets.FashionMNIST(root="data",train=False, download=True, transform=ToTensor())
+test_data = datasets.FashionMNIST(
+    root="data", train=False, download=True, transform=ToTensor()
+)
 
 batch_size = 64
 
@@ -21,8 +25,13 @@ for X, y in train_dataloader:
     print(f"Shape of y: {y.shape} {y.dtype}")
     break
 # 检查设备
-device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+device = (
+    torch.accelerator.current_accelerator().type
+    if torch.accelerator.is_available()
+    else "cpu"
+)
 print(f"Using {device} device")
+
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -32,7 +41,7 @@ class NeuralNetwork(nn.Module):
         # 模型序列
         self.linear_relu_stack = nn.Sequential(
             # 线性层 28*28 -> 512
-            nn.Linear(28*28, 512),
+            nn.Linear(28 * 28, 512),
             # 激活函数，非线性
             nn.ReLU(),
             # 中间层 512 -> 512
@@ -40,8 +49,9 @@ class NeuralNetwork(nn.Module):
             # 激活函数，非线性
             nn.ReLU(),
             # 输出层，输出10个类别
-            nn.Linear(512, 10)
+            nn.Linear(512, 10),
         )
+
     def forward(self, x):
         """
         前向传播
@@ -53,6 +63,7 @@ class NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
+
 # 初始化模型，并将模型放入设备（cpu或gpu(cuda)）
 model = NeuralNetwork().to(device)
 print(model)
@@ -62,6 +73,7 @@ print(model)
 loss_fn = nn.CrossEntropyLoss()
 # 随机梯度下降
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+
 
 # 定义训练方法
 def train(dataloader, model, loss_fn, optimizer):
@@ -93,6 +105,7 @@ def train(dataloader, model, loss_fn, optimizer):
             loss, current = loss.item(), (i + 1) * len(X)
             print(f"loss:{loss:>7f}  [{current:>5d}/{size:>5d}]")
 
+
 def test(dataloader, model, loss_fn):
     """
     测试模型
@@ -118,7 +131,10 @@ def test(dataloader, model, loss_fn):
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
     test_loss /= num_batches
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+    print(
+        f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n"
+    )
+
 
 def main(predict_=False, epochs=5):
     if predict_:
@@ -154,17 +170,6 @@ def main(predict_=False, epochs=5):
         torch.save(model.state_dict(), "model.pth")
         print("Save model successfully!")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main(True)
-
-
-
-
-
-
-
-
-
-
-
-

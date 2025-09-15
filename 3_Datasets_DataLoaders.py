@@ -12,6 +12,7 @@ download=True: 如果数据在 root 中不可用，则从 Internet 下载数据�
 
 transform: 和 target_transform 指定特征和标签转换
 """
+
 import torch
 from torchvision import datasets
 from torchvision.transforms import ToTensor
@@ -69,8 +70,11 @@ import pandas as pd
 from torchvision.io import decode_image
 from torch.utils.data import Dataset
 
+
 class CustomImageDataset(Dataset):
-    def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
+    def __init__(
+        self, annotations_file, img_dir, transform=None, target_transform=None
+    ):
         self.img_labels = pd.read_csv(annotations_file)
         self.img_dir = img_dir
         self.transform = transform
@@ -88,6 +92,7 @@ class CustomImageDataset(Dataset):
         if self.target_transform:
             label = self.target_transform(label)
         return image, label
+
 
 """
 DataLoaders
@@ -107,10 +112,3 @@ label = train_labels[0]
 plt.imshow(img, cmap="gray")
 plt.show()
 print(f"Label: {label}")
-
-
-
-
-
-
-
